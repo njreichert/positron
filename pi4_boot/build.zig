@@ -63,19 +63,13 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
-    exe.root_module.addCSourceFiles(.{
-        .files = &.{
-            "src/start.S",
-        },
-        .language = .assembly_with_preprocessor,
-    });
+    exe.setLinkerScript(b.path("linker.ld"));
 
     exe.root_module.addCSourceFiles(.{
-        .files = &.{
-            "src/foo.c",
-        },
-        .language = .c,
+        .files = &.{ "src/start.S", "src/foo.c" },
     });
+
+    exe.root_module.addCSourceFiles(.{ .files = &.{"src/armstub8.S"} });
 
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default
@@ -88,7 +82,7 @@ pub fn build(b: *std.Build) void {
     // This will evaluate the `run` step rather than the default step.
     // For a top level step to actually do something, it must depend on other
     // steps (e.g. a Run step, as we will see in a moment).
-    const run_step = b.step("run", "Run the app");
+    const run_step = b.step("run", "Run within QEMU");
 
     // This creates a RunArtifact step in the build graph. A RunArtifact step
     // invokes an executable compiled by Zig. Steps will only be executed by the
@@ -96,33 +90,17 @@ pub fn build(b: *std.Build) void {
     // or if another step depends on it, so it's up to you to define when and
     // how this Run step will be executed. In our case we want to run it when
     // the user runs `zig build run`, so we create a dependency link.
-    const run_cmd = b.addRunArtifact(exe);
+    const run_cmd = b.addSystemCommand(&.{
+        "./qemu.sh",
+    });
+
+    run_cmd.addArtifactArg(exe);
+
     run_step.dependOn(&run_cmd.step);
 
     // By making the run step depend on the default step, it will be run from the
     // installation directory rather than directly from within the cache directory.
     run_cmd.step.dependOn(b.getInstallStep());
-
-    // This allows the user to pass arguments to the application in the build
-    // command itself, like this: `zig build run -- arg1 arg2 etc`
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
-    // Creates an executable that will run `test` blocks from the executable's
-    // root module. Note that test executables only test one module at a time,
-    // hence why we have to create two separate ones.
-    const exe_tests = b.addTest(.{
-        .root_module = exe.root_module,
-    });
-
-    // A run step that will run the second test executable.
-    const run_exe_tests = b.addRunArtifact(exe_tests);
-
-    // A top level step for running all tests. dependOn can be called multiple
-    // times and since the two run steps do not depend on one another, this will
-    // make the two of them run in parallel.
-    const test_step = b.step("test", "Run tests");
-    test_step.dependOn(&run_exe_tests.step);
 
     // Just like flags, top level steps are also listed in the `--help` menu.
     //
