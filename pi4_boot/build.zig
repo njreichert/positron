@@ -47,7 +47,7 @@ pub fn build(b: *std.Build) void {
     // If neither case applies to you, feel free to delete the declaration you
     // don't need and to put everything under a single module.
     const exe = b.addExecutable(.{
-        .name = "pi4_boot",
+        .name = "kernel.elf",
         .root_module = b.createModule(.{
             // b.createModule defines a new module just like b.addModule but,
             // unlike b.addModule, it does not expose the module to consumers of
@@ -80,6 +80,8 @@ pub fn build(b: *std.Build) void {
     // by passing `--prefix` or `-p`.
     b.installArtifact(exe);
 
+    const kernel_path = exe.getEmittedBin();
+
     // This creates a top level step. Top level steps have a name and can be
     // invoked by name when running `zig build` (e.g. `zig build run`).
     // This will evaluate the `run` step rather than the default step.
@@ -93,17 +95,27 @@ pub fn build(b: *std.Build) void {
     // or if another step depends on it, so it's up to you to define when and
     // how this Run step will be executed. In our case we want to run it when
     // the user runs `zig build run`, so we create a dependency link.
-    const run_cmd = b.addSystemCommand(&.{
-        "./qemu.sh",
+    //
+    // Based on https://wiki.osdev.org/Zig_Bare_Bones
+    const qemu_cmd = b.addSystemCommand(&.{
+        // zig fmt: off
+        "qemu-system-aarch64",
+        "-M", "raspi4b",
+        "-m", "2G",
+        // "-serial", "stdio",
+        "-s", "-S",
+        "-nographic",
     });
 
-    run_cmd.addArtifactArg(exe);
+    // zig fmt: on
+    qemu_cmd.addArg("-kernel");
+    qemu_cmd.addFileArg(kernel_path);
+    qemu_cmd.step.dependOn(b.getInstallStep());
 
-    run_step.dependOn(&run_cmd.step);
+    run_step.dependOn(&qemu_cmd.step);
 
     // By making the run step depend on the default step, it will be run from the
     // installation directory rather than directly from within the cache directory.
-    run_cmd.step.dependOn(b.getInstallStep());
 
     // Just like flags, top level steps are also listed in the `--help` menu.
     //
