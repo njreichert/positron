@@ -1,11 +1,9 @@
-/* Pulled from https://wiki.osdev.org/Raspberry_Pi_Bare_Bones#Linking_the_Kernel -njreichert */
-
 ENTRY(_start)
 
 SECTIONS
 {
-    /* I am directly assembling armstub8.s into the elf, need to start there. */
-    . = 0x00000000;
+    /* Starts at LOADER_ADDR. */
+    . = 0x80000;
     /* For AArch64, use . = 0x80000; */
     __start = .;
     __text_start = .;

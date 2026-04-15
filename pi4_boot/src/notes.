@@ -1,0 +1,1 @@
+qemu-system-aarch64 -M raspi4b -kernel ./pi4_boot -s -S -nographic

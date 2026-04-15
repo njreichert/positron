@@ -17,12 +17,14 @@ pub fn build(b: *std.Build) void {
             .explicit = &std.Target.aarch64.cpu.cortex_a72,
         },
         .os_tag = .freestanding,
-        .abi = .eabihf,
+        .abi = .none,
     });
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
     // set a preferred release mode, allowing the user to decide how to optimize.
-    const optimize = b.standardOptimizeOption(.{});
+    const optimize = b.standardOptimizeOption(.{
+        .preferred_optimize_mode = .Debug,
+    });
     // It's also possible to define more custom flags to toggle optional features
     // of this build script using `b.option()`. All defined flags (including
     // target and optimize options) will be listed when running `zig build --help`
@@ -65,11 +67,12 @@ pub fn build(b: *std.Build) void {
 
     exe.setLinkerScript(b.path("linker.ld"));
 
-    exe.root_module.addCSourceFiles(.{
-        .files = &.{ "src/start.S", "src/foo.c" },
-    });
+    exe.root_module.addCSourceFiles(.{ .files = &.{
+        "src/start.S",
+        "src/foo.c",
+    }, .flags = &.{"-g"} });
 
-    exe.root_module.addCSourceFiles(.{ .files = &.{"src/armstub8.S"} });
+    // exe.root_module.addCSourceFiles(.{ .files = &.{"src/armstub8.S"} });
 
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default
