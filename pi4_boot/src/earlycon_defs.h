@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-typedef void (*EarlyconInitHandler)(uint32_t);
+typedef void (*EarlyconInitHandler)(uint32_t, void *);
 typedef size_t (*EarlyconPutsHandler)(char *);
 typedef size_t (*EarlyconPutcharHandler)(char);
 
