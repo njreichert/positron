@@ -3,20 +3,22 @@
 #include "earlycon.h"
 #include "earlycon_defs.h"
 
-static EarlyconCtx *earlycon_ctx;
+static EarlyconCtx earlycon_ctx;
 
-void earlycon_init(EarlyconCtx *which_con, uint32_t baudrate)
+void earlycon_init(EarlyconCtx *con, uint32_t baudrate)
 {
-    earlycon_ctx = which_con;
-    earlycon_ctx->init_handler(baudrate);
+    earlycon_ctx.init_handler = con->init_handler;
+    earlycon_ctx.putchar_handler = con->putchar_handler;
+    earlycon_ctx.puts_handler = con->puts_handler;
+    earlycon_ctx.init_handler(baudrate);
 }
 
 size_t earlycon_puts(const char *str)
 {
-    return earlycon_ctx->puts_handler(str);
+    return earlycon_ctx.puts_handler(str);
 }
 
 size_t earlycon_putchar(char c)
 {
-    earlycon_ctx->putchar_handler(c);
+    earlycon_ctx.putchar_handler(c);
 }
