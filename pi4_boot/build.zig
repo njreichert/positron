@@ -70,7 +70,7 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addCSourceFiles(.{ .files = &.{
         "src/start.S",
         "src/foo.c",
-    }, .flags = &.{"-g"} });
+    }, .flags = &.{"-g", "-std=c23"} });
 
     // exe.root_module.addCSourceFiles(.{ .files = &.{"src/armstub8.S"} });
 
