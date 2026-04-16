@@ -1,0 +1,17 @@
+// Based on https://wiki.osdev.org/Raspberry_Pi_Bare_Bones.
+#if RASPI4_LOW_PERIPH_MODE
+#define RASPI4_MAIN_PERIPH_BASE 0xFC00_0000UL
+#define RASPI4_ARM_PERIPH_BASE 0xFF80_0000UL
+#else
+#define RASPI4_MAIN_PERIPH_BASE 0x4_7C00_0000UL
+#define RASPI4_ARM_PEIPH_BASE 0x4_C000_0000UL
+#endif // RASPI4_LOW_PERIPH_MODE
+
+// Per SerenityOS repo.
+#define MBOX0 0xb880
+
+#define UART0 0x201000 // PL011
+#define UART2 0x201400 // PL011
+#define UART3 0x201600 // PL011
+#define UART4 0x201800 // PL011
+#define UART5 0x201a00 // PL011
