@@ -28,3 +28,9 @@ void mbox_block_until_response(uint32_t expected_val)
     while ((mbox_status() & MBOX_EMPTY) || (mbox_read() != expected_val)) { }
 }
 
+void mbox_write_prop_msg(uint32_t *msg)
+{
+    mbox_block_until_ready();
+    mbox_write((uint32_t)&msg, ARM_TO_VIDEOCORE_CHANNEL);
+    mbox_block_until_response(GET_MBOX_ADDR((uint32_t)&msg, ARM_TO_VIDEOCORE_CHANNEL));
+}
